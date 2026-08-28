@@ -56,7 +56,7 @@ class Config:
     # SOURCE_INTERACTIONS_13 = "Toys_and_Games_user_interactions_13.json"  # 元学习数据
     # TARGET_INTERACTIONS_13 = "Books_user_interactions_13.json"
     # TARGET_INTERACTIONS = "Books_user_interactions_5.json"  # 测试数据
-    EARLY_STOPPING_PATIENCE = 1  # 早停耐心值
+    EARLY_STOPPING_PATIENCE = 10  # 早停耐心值
     SEED = 18
 
     # 模型参数
@@ -72,14 +72,14 @@ class Config:
 
     # 训练配置
     EPOCHS = 10
-    BATCH_SIZE = 80
+    BATCH_SIZE = 128
     META_BATCH_SIZE = 64
     LEARNING_RATE = 5e-5
     MAML_LR = 5e-6  # 元学习学习率
     LR_DECAY_T_MAX = 50  # 余弦退火周期（完整周期的迭代次数）
     LR_MIN = 1e-6  # 最小学习率
     MAX_EPOCHS = 1  # 第一阶段总轮数
-    MAML_EPOCHS = 5  # 元学习总轮数
+    MAML_EPOCHS = 100  # 元学习总轮数
     FINETUNE_LR = 1e-6  # 微调学习率
     FINETUNE_EPOCHS = 1  # 微调总轮数
     CONTRASTIVE_TEMP = 0.7  # 对比学习温度参数
@@ -94,7 +94,7 @@ class Config:
     # 聚类配置（GSOM_MI参数）
     CLUSTER_CONFIG = {
         "spread_factor": 0.4,
-        "max_iter": 3,#模型中用户兴趣聚类用的是3
+        "max_iter": 3,#模型中用户兴趣聚类
         "learning_rate": 0.015,
         "radius": 0.6,
         "dim": ITEM_DIM,
@@ -106,7 +106,7 @@ class Config:
 
     # 负采样配置
     NEGATIVE_SAMPLES = 20  # BPR损失负样本数量
-    CACHE_UPDATE_INTERVAL = 200  # 缓存更新间隔（轮数）
+    CACHE_UPDATE_INTERVAL = 100  # 缓存更新间隔（轮数）
 
 
 config = Config()
