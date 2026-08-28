@@ -94,7 +94,7 @@ class Config:
     # 聚类配置（GSOM_MI参数）
     CLUSTER_CONFIG = {
         "spread_factor": 0.4,
-        "max_iter": 3,#模型中用户兴趣聚类
+        "max_iter": 10,#模型中用户兴趣聚类
         "learning_rate": 0.015,
         "radius": 0.6,
         "dim": ITEM_DIM,
