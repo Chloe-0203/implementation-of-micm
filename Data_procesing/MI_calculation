@@ -1,0 +1,72 @@
+import numpy as np
+import os
+from tqdm import tqdm
+from multiprocessing import Pool, cpu_count
+from npeet.entropy_estimators import mi
+
+
+def compute_mi_pair(args):
+    """单个源向量与目标向量的互信息计算（供多进程调用）"""
+    src_vec, tgt_vec = args
+    src_reshaped = src_vec.reshape(-1, 1)  # 适配npeet的形状要求
+    tgt_reshaped = tgt_vec.reshape(-1, 1)
+    return mi(src_reshaped, tgt_reshaped)
+
+
+def compute_mi_matrix(source_emb, target_emb, n_jobs=None):
+    """多进程并行计算互信息矩阵，返回保留4位小数的结果"""
+    m, d = source_emb.shape
+    n, _ = target_emb.shape
+    mi_matrix = np.zeros((m, n), dtype=np.float32)  # 用float32存储
+
+    # 自动确定并行进程数（默认使用所有CPU核心）
+    n_jobs = n_jobs if n_jobs is not None else cpu_count()
+    print(f"使用 {n_jobs} 个CPU核心并行计算...")
+
+    # 按源向量逐个处理
+    for i in tqdm(range(m), desc="计算互信息矩阵"):
+        src_vec = source_emb[i]
+        tasks = [(src_vec, target_emb[j]) for j in range(n)]
+
+        # 多进程计算
+        with Pool(n_jobs) as pool:
+            mi_values = pool.map(compute_mi_pair, tasks)
+
+        # 关键修改：四舍五入保留4位小数
+        mi_values_rounded = np.round(mi_values, 4).astype(np.float32)
+        mi_matrix[i] = mi_values_rounded
+
+    return mi_matrix
+
+
+def main():
+    # 路径配置
+    book_emb_path = r"/MICM_Implemention/data/Books_initial_embeddings.npy"
+    movie_emb_path = r"/MICM_Implemention/data/Movies_and_TV_initial_embeddings.npy"
+    output_mi_path = r"D:\CODE\MICM\Dataset\Amazon\Data_Processed\book_movie_mi_matrix.npy"
+
+    # 创建输出目录
+    os.makedirs(os.path.dirname(output_mi_path), exist_ok=True)
+
+    # 加载向量
+    print("加载向量数据...")
+    book_emb = np.load(book_emb_path)
+    movie_emb = np.load(movie_emb_path)
+
+    # 验证维度
+    assert book_emb.shape[1] == movie_emb.shape[1], "向量维度必须一致！"
+    print(f"向量维度：{book_emb.shape[1]} 维")
+    print(f"数据规模：书本 {book_emb.shape[0]} 个，影视 {movie_emb.shape[0]} 个")
+
+    # 计算互信息矩阵
+    print("开始计算互信息矩阵...")
+    mi_matrix = compute_mi_matrix(book_emb, movie_emb)
+
+    # 保存结果
+    np.save(output_mi_path, mi_matrix)
+    print(f"计算完成，矩阵已保存至 {output_mi_path}")
+    print(f"矩阵形状：{mi_matrix.shape}，数据类型：{mi_matrix.dtype}")
+
+
+if __name__ == "__main__":
+    main()
